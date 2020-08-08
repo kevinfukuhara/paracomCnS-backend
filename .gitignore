@@ -1,3 +1,6 @@
+# Environment file containing API Keys and passwords - to be stored on local servers/secure hosts
+.env
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
