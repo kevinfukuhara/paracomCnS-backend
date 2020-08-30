@@ -56,34 +56,37 @@ for i in range(len(shops)):
 
 
     # Counters/metrics for the Cash and Sales spreadsheet. 
-    discount_10 = 0             # 10% discount for SeaTac general employees
-    discount_15 = 0             # 15% discount for ???????
-    discount_25 = 0             # 25% discount for ???????
-    discount_40 = 0             # 40% discount for concourse employees
-    discount_100 = 0            # 100% discount for managers
-    discount_count = 0          # count of discounts given out 
+    discount_10 = 0.00               # 10% discount for SeaTac general employees
+    discount_15 = 0.00               # 15% discount for ???????
+    discount_25 = 0.00               # 25% discount for ???????
+    discount_40 = 0.00               # 40% discount for concourse employees
+    discount_100 = 0.00              # 100% discount for managers
+    discount_count = 0.00            # count of discounts given out 
 
-    net_1 = 0                   # net sale amount without tax
+    net_1 = 0.00                   # net sale amount without tax
     # net_2 = net_1 + tax
     # net_3 = net_2
-    tax_total = 0               # total tax charged
-    tips_total = 0
-
-    cash_total = 0              # total amount tendered in CASH
-    credit_card_total = 0       # total amount tendered by CARD
-    visa_total = 0              
-    mastercard_total = 0
-    amex_total = 0
-    disc_total = 0
+    tax_total = 0.00               # total tax charged
+    tips_total = 0.00              # total tips given for credit card transactions
+    refund_total = 0.00            # total refunded before tax
+    refunded_tax_total = 0.00      # total tax refunded
+    refund_count = 0.00            # Count of refunds granted
     
-    american_vouch = 0          # Vouchers for each airline
-    southwest_vouch = 0
-    hawaiian_vouch = 0
-    northwest_vouch = 0
-    delta_vouch = 0
-    alaska_vouch = 0
-    misc_vouch = 0              # vouchers that are Misc, spirit, or jet-blue
-    gift_certificate = 0
+    cash_total = 0.00              # total amount tendered in CASH
+    credit_card_total = 0.00       # total amount tendered by CARD
+    visa_total = 0.00              
+    mastercard_total = 0.00
+    amex_total = 0.00
+    disc_total = 0.00
+    
+    american_vouch = 0.00          # Vouchers for each airline
+    southwest_vouch = 0.00
+    hawaiian_vouch = 0.00
+    northwest_vouch = 0.00
+    delta_vouch = 0.00
+    alaska_vouch = 0.00
+    misc_vouch = 0.00              # vouchers that are Misc, spirit, or jet-blue
+    gift_certificate = 0.00
 
     tracked_order_ids = []      # Used to track Order IDs with unrecognized properties (e.g. unexpected discount levels, payment types)
 
@@ -138,8 +141,15 @@ for i in range(len(shops)):
         tax_total += order_tax[k]
         tips_total += tip_amt[k]
 
+        # Determine if the order was a 'REFUND'
+        if refund_amt[k] > 0:
+            refund_total = float(refund_amt[k])
+            refunded_tax_total = float(refund_tax[k])
+            log_str = "Order ID: [{}], Refund given for ${} with tax ${}".format(order_id[k], refund_amt[k], refund_tax[k])
+
         # Find out Transaction/tender type (Cash, Card, voucher)
         tender_type = payment_type[k]
+        order_net_amount_paid = order_payment_net[k]
         if tender_type == 'Cash':
             pass
         elif tender_type == 'Credit Card':
@@ -151,10 +161,10 @@ for i in range(len(shops)):
         elif tender_type == 'Voucher Misc':
             pass
         else:                                   # Untracked case - log the relevant info
-
+            log_str = "Order ID: [{}], Unrecognized Discount level of {}.".format(order_id[k], tender_type)
+            tracked_order_ids.append(log_str)
             pass
 
-
-
+        print(net_1)
     pass
     
