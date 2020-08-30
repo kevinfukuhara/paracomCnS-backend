@@ -38,7 +38,7 @@ shops = [
         ]
 
 for i in range(len(shops)):
-     # Lists from the dataframe we are interested in -
+    # Lists from the dataframe we are interested in -
     order_payment_net = shops[i]['Order Payment Net'].to_list()
     # order_gross_amt = shops[i]['Order amount'].to_list()
     order_tax = shops[i]['Order Tax'].to_list()
@@ -85,44 +85,76 @@ for i in range(len(shops)):
     misc_vouch = 0              # vouchers that are Misc, spirit, or jet-blue
     gift_certificate = 0
 
+    tracked_order_ids = []      # Used to track Order IDs with unrecognized properties (e.g. unexpected discount levels, payment types)
+
     # loop through all the lines in each shops' list
     for k in range(len(order_payment_net)):
-        #############################
-        ######### Discounts #########
-        ############################# Note: Can be evaluated independent of other variables
-        discount_num = float(discount_amt[k])        
+    #     #############################
+    #     ######### Discounts #########
+    #     ############################# Note: Can be evaluated independent of other variables
+    #     discount_num = float(discount_amt[k])        
 
-        if (discount_num != 0.0):
-            discount_count += 1                     # increment discount number
-            # print(discount_num)
+    #     if (discount_num != 0.0):
+    #         discount_count += 1                     # increment discount number
+    #         # print(discount_num)
 
-            disc_level = int(discount_name[k])
-            if disc_level == 100.0:    
-                discount_num = Decimal(discount_amt[k])
-            elif disc_level == 0.0:
-                discount_num = Decimal((order_profit_for_disc[k]) * (10 / 100) / (1 - (10/100)))
-            else:
-                discount_num = Decimal((order_profit_for_disc[k]) * (disc_level / 100) / (1 - (disc_level/100)))
+    #         disc_level = int(discount_name[k])
+    #         if disc_level == 100.0:    
+    #             discount_num = Decimal(discount_amt[k])
+    #         elif disc_level == 0.0:
+    #             discount_num = Decimal((order_profit_for_disc[k]) * (10 / 100) / (1 - (10/100)))
+    #         else:
+    #             discount_num = Decimal((order_profit_for_disc[k]) * (disc_level / 100) / (1 - (disc_level/100)))
 
-            discount_num_rounded = discount_num.quantize(Decimal('0.01'))
-            print(discount_num_rounded)
-            float(discount_num_rounded)
+    #         discount_num_rounded = discount_num.quantize(Decimal('0.01'))
+    #         print(discount_num_rounded)
+    #         float(discount_num_rounded)
 
-            if (disc_level == 100):                 # 100% manager discount case
-                discount_100 += discount_num_rounded
-            elif (disc_level == 40):                # 40% CC discount case
-                discount_40 += discount_num_rounded
-            elif (disc_level == 25):                # 25% ???? discount case
-                discount_25 += discount_num_rounded
-            elif (disc_level == 15):                # 15% ???? discount case
-                discount_15 += discount_num_rounded
-            else:                                   # 10% Seatac employee discount case
-                discount_10 += discount_num_rounded
-    print("Count of discounts: " + str(discount_count))
-    print("Total discounts provided: " + str(discount_100 + discount_40 + discount_25 + discount_15 + discount_10))  
-    ###################################
-    ##### End of Discount Section #####
-    ###################################
+    #         if (disc_level == 100):                 # 100% manager discount case
+    #             discount_100 += discount_num_rounded
+    #         elif (disc_level == 40):                # 40% CC discount case
+    #             discount_40 += discount_num_rounded
+    #         elif (disc_level == 25):                # 25% ???? discount case
+    #             discount_25 += discount_num_rounded
+    #         elif (disc_level == 15):                # 15% ???? discount case
+    #             discount_15 += discount_num_rounded
+    #         elif (disc_level == 0):                    # 10% Seatac employee discount case
+            #     discount_10 += discount_num_rounded
+            # else:                                       # Unexpected discount level Case
+            #     log_str = "Order ID: [{}], Unrecognized Discount level of {}.".format(order_id[k], str(disc_level))
+            #     tracked_order_ids.append(log_str)
+    # print("Count of discounts: " + str(discount_count))
+    # print("Total discounts provided: " + str(discount_100 + discount_40 + discount_25 + discount_15 + discount_10))  
+    # ###################################
+    # ##### End of Discount Section #####
+    # ###################################
         
+        ####################################
+        ##### Ordering/Numbers Section #####
+        #################################### Note: Refunds and Total Sales amount can be added up seperately
+        
+        # Total the payment totals (amount before tax into net_1 and tax into tax_total)
+        net_1 += order_payment_net[k]
+        tax_total += order_tax[k]
+        tips_total += tip_amt[k]
+
+        # Find out Transaction/tender type (Cash, Card, voucher)
+        tender_type = payment_type[k]
+        if tender_type == 'Cash':
+            pass
+        elif tender_type == 'Credit Card':
+            pass
+        elif tender_type == 'Debit Card':
+            pass
+        elif tender_type == 'Gift Certifate':
+            pass
+        elif tender_type == 'Voucher Misc':
+            pass
+        else:                                   # Untracked case - log the relevant info
+
+            pass
+
+
+
     pass
     

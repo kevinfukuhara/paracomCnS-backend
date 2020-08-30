@@ -2,8 +2,10 @@
 import pandas as pd
 from datetime import time, datetime, timedelta, date
 import openpyxl
-from decimal import localcontext, Decimal, ROUND_HALF_UP
+from decimal import *
 with localcontext() as ctx:
+    ctx.prec = 20
+    ctx.rounding = ROUND_HALF_UP
 
 # Create dataframes from the daily report files
 #   Dataframes based on Merchant Name/ID (MID) 
@@ -38,6 +40,8 @@ for i in range(len(shops)):
     order_payment_net = shops[i]['Order Payment Net'].to_list()
     # order_gross_amt = shops[i]['Order amount'].to_list()
     order_tax = shops[i]['Order Tax'].to_list()
+    order_id = shops[i]['Order ID'].to_list()
+    order_profit_for_disc = shops[i]['Order Profit'].to_list()
     
     payment_type = shops[i]['Payment Label'].to_list()
     card_type = shops[i]['Card Type'].to_list()
@@ -48,9 +52,10 @@ for i in range(len(shops)):
     refund_amt = shops[i]['Order Refund'].to_list()
     refund_tax = shops[i]['Order Refund Tax'].to_list()
 
-
     # Counters/metrics for the Cash and Sales spreadsheet. 
     discount_10 = 0             # 10% discount for SeaTac general employees
+    discount_15 = 0             # 15% discount for ???????
+    discount_25 = 0             # 25% discount for ???????
     discount_40 = 0             # 40% discount for concourse employees
     discount_100 = 0            # 100% discount for managers
     discount_count = 0          # count of discounts given out 
@@ -77,21 +82,60 @@ for i in range(len(shops)):
     misc_vouch = 0              # vouchers that are Misc, spirit, or jet-blue
     gift_certificate = 0
 
-    # Discounts Can be evaluated independent of other variables
-    discount_num = int(discount_amt[i])
-    if (int(discount_amt[i]) != 0):
-        discount_count += 1                     # increment discount number
+    tracked_order_ids = []      # Used to track Order IDs with unrecognized properties (e.g. unexpected discount levels, payment types)
 
-        if (int(discount_name[i]) == 100):      # 100% manager discount case
-            discount_100 += discount_num
-        elif (int(discount_name[i]) == 40):     # 40% CC discount case
-            discount_40 += discount_num
-        else:                                   # Seatac employee discount case
-            discount_10 += discount_num
+    # loop through all the lines in each shops' list
+    for k in range(len(order_payment_net)):
+        #############################
+        ######### Discounts #########
+        ############################# Note: Can be evaluated independent of other variables
+        discount_num = float(discount_amt[k])        
 
-    #
+        if (discount_num != 0.0):
+            discount_count += 1                     # increment discount number
 
+            disc_level = int(discount_name[k])
+            if disc_level == 100.0:    
+                discount_num = Decimal(discount_amt[k])
+            elif disc_level == 0.0:
+                discount_num = Decimal((order_profit_for_disc[k]) * (10 / 100) / (1 - (10/100)))
+            else:
+                discount_num = Decimal((order_profit_for_disc[k]) * (disc_level / 100) / (1 - (disc_level/100)))
+
+            # Round the discount result to two-decimal places -- then cast variable to float format
+            discount_num_rounded = discount_num.quantize(Decimal('0.01'))
+            float(discount_num_rounded)
+
+            if (disc_level == 100):                     # 100% manager discount case
+                discount_100 += discount_num_rounded
+            elif (disc_level == 40):                    # 40% CC discount case
+                discount_40 += discount_num_rounded
+            elif (disc_level == 25):                    # 25% ???? discount case
+                discount_25 += discount_num_rounded
+            elif (disc_level == 15):                    # 15% ???? discount case
+                discount_15 += discount_num_rounded
+            elif (disc_level == 0):                    # 10% Seatac employee discount case
+                discount_10 += discount_num_rounded
+            else:                                       # Unexpected discount level Case
+                log_str = "Order ID: [{}], Unrecognized Discount level of {}.".format(order_id[k], str(disc_level))
+                tracked_order_ids.append(log_str)
+    
+    print("Count of discounts: " + str(discount_count))
+    print("Total discounts provided: " + str(discount_100 + discount_40 + discount_25 + discount_15 + discount_10))  
+    #---------------------------------#
+    #---- End of Discount Section ----#
+    #---------------------------------#
+
+    ###################################
 
     # Based on value of 'i', place stats into respective worksheet in Cash&Sales excel file.
 
+    if i == 0:
+        shop_name = "Hachi-Ko"
+        pass
+    elif i == 1:
+        shop_name = "Cafe Darte"
+        pass
+    elif i == 2: 
+        shop_name = "La Pisa"
     pass
